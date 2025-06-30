@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Minecraft Mod Updater</title>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script type="text/babel">
+function App() {
+  const [jar, setJar] = React.useState(null);
+  const [version, setVersion] = React.useState('');
+  const [modrinthId, setModrinthId] = React.useState('');
+  const [curseId, setCurseId] = React.useState('');
+  const [curseKey, setCurseKey] = React.useState('');
+  const [msg, setMsg] = React.useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!jar) return;
+    const fd = new FormData();
+    fd.append('jar', jar);
+    fd.append('version', version);
+    fd.append('modrinth_id', modrinthId);
+    fd.append('curse_id', curseId);
+    fd.append('curse_key', curseKey);
+    fetch('/update', {method: 'POST', body: fd}).then(async res => {
+      if (res.headers.get('content-type')?.includes('application/json')) {
+        const j = await res.json();
+        setMsg(j.status === 'exists' ? 'Target version already exists.' : 'Unknown response');
+      } else if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        setMsg('Download started.');
+      } else {
+        setMsg('Error: ' + res.statusText);
+      }
+    }).catch(err => setMsg('Error: ' + err));
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>Jar file: <input type="file" accept=".jar" onChange={e => setJar(e.target.files[0])} /></label>
+      </div>
+      <div>
+        <label>Target version: <input value={version} onChange={e => setVersion(e.target.value)} /></label>
+      </div>
+      <div>
+        <label>Modrinth Project ID: <input value={modrinthId} onChange={e => setModrinthId(e.target.value)} /></label>
+      </div>
+      <div>
+        <label>CurseForge Mod ID: <input value={curseId} onChange={e => setCurseId(e.target.value)} /></label>
+      </div>
+      <div>
+        <label>CurseForge API Key: <input value={curseKey} onChange={e => setCurseKey(e.target.value)} /></label>
+      </div>
+      <button type="submit">Update</button>
+      <p>{msg}</p>
+    </form>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
