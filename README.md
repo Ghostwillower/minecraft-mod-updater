@@ -1,23 +1,20 @@
-# Minecraft Mod Auto-Updater
+# Minecraft Mod Updater
 
-Continuous-integration workflow that:
-1. Checks Modrinth and CurseForge to see if a build for the requested Minecraft version already exists.
-2. If none is found, rebuilds the mod JAR, rewrites its metadata to the target version, and uploads the rebuilt JAR as a workflow artifact.
+This project provides tools for retargeting Minecraft mod JARs to a different
+game version. You can use either the simple Tkinter GUI or a web interface
+served with Flask and React.
 
 ## Usage
-* Manually trigger the workflow from the “Actions” tab and supply **target_version** (e.g. `1.20.4`).
-* Or let the nightly cron run do its thing.
-* Grab the rebuilt JAR from the workflow run’s “Artifacts” section.
+1. Run `python3 mod_updater_gui.py`.
+2. Select the JAR file you want to update.
+3. Enter the target Minecraft version along with your Modrinth project ID, CurseForge mod ID and API key.
+4. The tool checks both sites for an existing build and, if none is found, writes a new JAR next to the original named `modname}{version.jar`.
 
-### Required secrets
-| Name                | Purpose                          |
-| ------------------- | -------------------------------- |
-| `CURSEFORGE_API_KEY`| Access to CurseForge API         |
+The Tkinter app relies on the `requests` package which is generally available
+with Python 3. If missing, install it with `pip install requests`.
 
-### Required repository variables
-| Name                   | Example            |
-| ---------------------- | ------------------ |
-| `MODRINTH_PROJECT_ID`  | `abcd1234`         |
-| `CURSEFORGE_MOD_ID`    | `123456`           |
-
-No external publishing happens here—just build and ship the JAR artifact.
+## React Web Interface
+1. Install the server dependencies with `pip install flask requests`.
+2. Run `python3 server.py`.
+3. Visit [http://localhost:5000](http://localhost:5000) to access the React
+   frontend and update your JAR.
